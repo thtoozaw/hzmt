@@ -1,1 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Plate Calendar</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f8; color: #333; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #app { width: 360px; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h1 { font-size: 1.5rem; margin-bottom: 16px; text-align: center; }
+        form { display: flex; flex-direction: column; gap: 12px; }
+        label { font-weight: 600; }
+        input[type="text"] { padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+        button { background: #0078d4; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        button:hover { background: #005fa3; }
+        #result { margin-top: 12px; font-weight: bold; text-align: center; }
+        #calendar { margin-top: 20px; }
+        #calendar table { border-collapse: collapse; width: 100%; }
+        #calendar th, #calendar td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        #calendar td.highlight-odd { background: #ffe5e5; }
+        #calendar td.highlight-even { background: #e5e5ff; }
+    </style>
+</head>
+<body>
+    <h1>Car Plate Odd/Even Calendar</h1>
+    <form id="plateForm">
+        <label for="plate">Enter car plate number:</label>
+        <input type="text" id="plate" name="plate" required autofocus>
+        <button type="submit">Check</button>
+    </form>
+    <div id="result"></div>
+    <div id="calendar"></div>
 
+    <script>
+        function generateCalendar(year, month, parity) {
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const table = document.createElement('table');
+            const header = table.insertRow();
+            ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
+                const th = document.createElement('th');
+                th.textContent = d;
+                header.appendChild(th);
+            });
+
+            let row = table.insertRow();
+            for (let i = 0; i < firstDay; i++) {
+                row.insertCell();
+            }
+            for (let day = 1; day <= daysInMonth; day++) {
+                if (row.cells.length === 7) {
+                    row = table.insertRow();
+                }
+                const cell = row.insertCell();
+                cell.textContent = day;
+                const isOdd = day % 2 === 1;
+                if ((parity === 'odd' && isOdd) || (parity === 'even' && !isOdd)) {
+                    cell.className = 'highlight-' + parity;
+                }
+            }
+            return table;
+        }
+
+        document.getElementById('plateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const plate = document.getElementById('plate').value.trim();
+            const match = plate.match(/\d/);
+            const resultDiv = document.getElementById('result');
+            const calendarDiv = document.getElementById('calendar');
+            calendarDiv.innerHTML = '';
+            if (!match) {
+                resultDiv.textContent = 'No digits found in plate number.';
+                return;
+            }
+            const firstDigit = parseInt(match[0], 10);
+            const parity = (firstDigit % 2 === 0) ? 'even' : 'odd';
+            resultDiv.textContent = `First number ${firstDigit} is ${parity}. Highlights ${parity} dates.`;
+            const today = new Date();
+            const table = generateCalendar(today.getFullYear(), today.getMonth(), parity);
+            calendarDiv.appendChild(table);
+        });
+    </script>
+</body>
+</html>
